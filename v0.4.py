@@ -441,7 +441,7 @@ def rotate_system(inputs):
     y_linha = vel[0] * math.sin(alpha) + vel[1] * math.cos(alpha)
  
     vel[0] = x_linha
-    vel[0] = y_linha    
+    vel[1] = y_linha    
 
     # rotação da posição
     # rotacao em relacao ao eixo z
