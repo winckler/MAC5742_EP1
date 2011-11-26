@@ -124,8 +124,7 @@ class tile():
             # caso atinja o limite
             if self.new_temp > self.max_temp:
                 self.bursted = True
-                self.new_temp = (self.left.last_temp + self.right.last_temp) / 2
-            
+                self.new_temp = perimeter_temp(self)
 
     def update_temp(self):
         # avança com o timestep 
