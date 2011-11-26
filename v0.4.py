@@ -494,18 +494,8 @@ def parse_input():
     i["vel"] = tuple(values[11:14])
     i["steps"] = int(values[14])
     
-#    i["h"] = 450
-#    i["a"] = 3
-#    i["d"] = 3.5
-#    i["alpha"] = 2
-#    i["delta"] = 0.5
-#    i["t_0"] = 0.0
-#    i["t_inicial"] = 0
-#    i["theta_crit"] = 1000 #?
-#    i["theta_0"] = 10
-#    i["pos"] = (1.0, 1.0, 1.0)
-#    i["vel"] = (0, 0, -5)
-#    i["steps"] = 1000
+    rotate_system(i)
+
     return i
 
 if __name__ == "__main__":
