@@ -1,0 +1,68 @@
+EP1 - MAC5742 - 27/11/2011
+Gabriel A. von Winckler
+#USP 3313359
+
+Como usar
+=========
+
+make (ou CC=icc make)
+
+./neutrino < test1.in
+(o output é salvo como neutrino.out)
+
+make clean
+
+
+Sobre o EP
+==========
+
+Grande parte do trabalho foi gerar uma versão serial funcional. Implementar um código de referência, compartilhado entre toda a sala, foi uma boa saída, porém poderia-mos ter escrito esse código antes.
+
+Nesse código, técnicas de orientação a objeto foram usadas exaustivamente (até mais do que eu utilizaria normalmente) para esconder as estruturas de dados.
+
+Um visualizador (usando a biblioteca VTK) também foi implementado.
+
+Otimização
+==========
+
+O trabalho de otimização consistiu em armazenar os resultados intermediários dos cálculos de atrito e dissipação.
+
+Acho que a maior sacada do EP era de otimização e não paralelização, ao perceber que os parâmetros da função atan() são invariantes com a posição da pastilha: só depende do passo de execução. Salvar esse resultado gera grandes ganhos, pois essa é a função mais cara computacionalmente.
+
+Outros valores intermediários puderam ser guardados, como a multiplicação escalar da normal pelo vetor velocidade. Na realidade, foi possível salvar esses valores pré multiplicas com o coeficiente e, testar a condição maior que 0 com antecedência, o que também removeu um if no laço principal. 
+
+Outra otimização, relacionado as estruturas de dados, optei por guardar o valor principal da temperatura fora da estrutura (struct) principal, em um vetor a parte. A grande vantagem é fazer a atualização dos valores de temperatura com um único memcpy, ao invés de um loop. 
+
+
+Paralelização
+=============
+
+Feitas as otimizações, a quantidade de cálculos realizada no loop principal reduziu significativamente, quase ao ponto de tornar a paralelização inútil.
+
+Utilizei openMP, por sua facilidade de uso e eficiência. Para maximizar o paralelismo, aplique além do bloco principal, em um bloco secundário, que calcula as temperaturas médias por anel.
+
+Como o bloco principal tem um número quase constante de operações, todas da mesma natureza, obtive os melhores resultados com um escalonador estático.
+
+No bloco secundário, que itera sobre os anéis, foi adotado o escalonador dinâmico, pois o tamanho dos anéis varia, apesar do ganho pequeno, pois o número de pastilhas por anéis tende a um valor constante quanto mais longo o elipsoide e as operações são muito elementares. Nesse loop também usei um reduce, para obter a temperatura média de todas as pastilhas.
+
+
+Resultados
+==========
+
+Obtive ótimos resultados com a otimização e resultados satisfatórios com a paralelização. O speedup não é ótimo, mas não saturou em nenhum teste (testei com uma máquina com até 8 cores). Como esperado, o hyperthread piora o desempenho, o que é um bom sinal.
+
+Testei com icc e gcc e, contrariando minhas expectativas, o resultado foi muito próximo. Em máquinas ligeiramente mais antigas, o resultado é igual. Em máquinas da última geração da Intel, existe uma ligeira vantagem para o icc.
+
+Testei com algumas variações de input (2 estão incluídos), até 1 milhão de pastilhas.
+
+Sugestões
+=========
+
+Achei o EP bem interessante. E tenho algumas sugestões para uma próxima vez:
+
+ - Estimular desde o início a criação de um código de referência coletivo.
+ 
+ - Geometria: Seria legal adotar sólidos com geometria arbitrária, definida por uma malha de triângulos. Assim, a entrada do programa seria uma malha (pontos e vértices). Isso permitiria focar mais na otimização e paralelização da simulação e, ao mesmo tempo, fazer simulações mais interessantes (reais). Isso também facilitaria implementar uma versão de GPU.
+
+ - Processamentos desse tipo tem 3 etapas: pre-processamento, simulação e visualização. Um ideia é ter um preprocessador que cuida da geometria (gerar uma malha) e um visualizador. Poderia-se oferecer um ponto extra para quem disponibilizar até a metade do prazo o melhor pré e pós processado, talvez eleito pela própria sala.
+
